@@ -1,8 +1,14 @@
 package com.iotwastecollection.collection.service.impl;
 
+import com.iotwastecollection.collection.domain.entity.CollectionRoute;
+import com.iotwastecollection.collection.domain.entity.Driver;
 import com.iotwastecollection.collection.domain.entity.Schedule;
+import com.iotwastecollection.collection.domain.entity.Truck;
 import com.iotwastecollection.collection.domain.enums.ScheduleStatus;
+import com.iotwastecollection.collection.repository.CollectionRouteRepository;
+import com.iotwastecollection.collection.repository.DriverRepository;
 import com.iotwastecollection.collection.repository.ScheduleRepository;
+import com.iotwastecollection.collection.repository.TruckRepository;
 import com.iotwastecollection.collection.service.inter.IScheduleService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +21,44 @@ import java.util.List;
 @Transactional
 public class ScheduleServiceImpl implements IScheduleService {
     private final ScheduleRepository scheduleRepository;
+    private final DriverRepository driverRepository;
+    private final TruckRepository truckRepository;
+    private final CollectionRouteRepository collectionRouteRepository;
 
     @Autowired
-    public ScheduleServiceImpl(ScheduleRepository scheduleRepository) {
+    public ScheduleServiceImpl(ScheduleRepository scheduleRepository,
+                               DriverRepository driverRepository,
+                               TruckRepository truckRepository,
+                               CollectionRouteRepository collectionRouteRepository) {
         this.scheduleRepository = scheduleRepository;
+        this.driverRepository = driverRepository;
+        this.truckRepository = truckRepository;
+        this.collectionRouteRepository = collectionRouteRepository;
     }
 
     @Override
     public Schedule createSchedule(Schedule schedule) {
+        // Load Driver entity if it exists
+        if (schedule.getDriver() != null && schedule.getDriver().getId() != null) {
+            Driver driver = driverRepository.findById(schedule.getDriver().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Driver not found with id: " + schedule.getDriver().getId()));
+            schedule.setDriver(driver);
+        }
+        
+        // Load Truck entity if it exists
+        if (schedule.getTruck() != null && schedule.getTruck().getId() != null) {
+            Truck truck = truckRepository.findById(schedule.getTruck().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Truck not found with id: " + schedule.getTruck().getId()));
+            schedule.setTruck(truck);
+        }
+        
+        // Load CollectionRoute entity if it exists (optional)
+        if (schedule.getRoute() != null && schedule.getRoute().getId() != null) {
+            CollectionRoute route = collectionRouteRepository.findById(schedule.getRoute().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("CollectionRoute not found with id: " + schedule.getRoute().getId()));
+            schedule.setRoute(route);
+        }
+        
         return scheduleRepository.save(schedule);
     }
 
@@ -48,9 +84,29 @@ public class ScheduleServiceImpl implements IScheduleService {
         existing.setDateHeureFin(schedule.getDateHeureFin());
         existing.setNotes(schedule.getNotes());
         existing.setStatus(schedule.getStatus());
-        existing.setDriver(schedule.getDriver());
-        existing.setTruck(schedule.getTruck());
-        existing.setRoute(schedule.getRoute());
+        
+        // Load Driver entity if it exists
+        if (schedule.getDriver() != null && schedule.getDriver().getId() != null) {
+            Driver driver = driverRepository.findById(schedule.getDriver().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Driver not found with id: " + schedule.getDriver().getId()));
+            existing.setDriver(driver);
+        }
+        
+        // Load Truck entity if it exists
+        if (schedule.getTruck() != null && schedule.getTruck().getId() != null) {
+            Truck truck = truckRepository.findById(schedule.getTruck().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Truck not found with id: " + schedule.getTruck().getId()));
+            existing.setTruck(truck);
+        }
+        
+        // Load CollectionRoute entity if it exists (optional)
+        if (schedule.getRoute() != null && schedule.getRoute().getId() != null) {
+            CollectionRoute route = collectionRouteRepository.findById(schedule.getRoute().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("CollectionRoute not found with id: " + schedule.getRoute().getId()));
+            existing.setRoute(route);
+        } else {
+            existing.setRoute(null); // Allow clearing the route
+        }
 
         return scheduleRepository.save(existing);
     }

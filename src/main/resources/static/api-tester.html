@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collection Service API Tester</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🚛</text></svg>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .response-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .card {
+            margin-bottom: 10px;
+        }
+        .entity-section {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .btn-group-crud {
+            margin-bottom: 15px;
+        }
+        .form-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .badge-status {
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4 mb-4">
+    <h1 class="mb-4">🚛 Collection Service API Tester</h1>
+
+    <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="drivers-tab" data-bs-toggle="tab" data-bs-target="#drivers" type="button">👤 Drivers</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="trucks-tab" data-bs-toggle="tab" data-bs-target="#trucks" type="button">🚚 Trucks</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="routes-tab" data-bs-toggle="tab" data-bs-target="#routes" type="button">🗺️ Routes</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="schedules-tab" data-bs-toggle="tab" data-bs-target="#schedules" type="button">📅 Schedules</button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+        <!-- DRIVERS TAB -->
+        <div class="tab-pane fade show active" id="drivers" role="tabpanel">
+            <div class="entity-section">
+                <h3>👤 Drivers Management</h3>
+                <div class="btn-group-crud">
+                    <button class="btn btn-primary" onclick="loadAllDrivers()">Get All Drivers</button>
+                    <button class="btn btn-info" onclick="showGetDriverById()">Get by ID</button>
+                    <button class="btn btn-info" onclick="showGetDriverByEmail()">Get by Email</button>
+                    <button class="btn btn-info" onclick="showGetDriversByStatus()">Get by Status</button>
+                </div>
+                
+                <div class="form-section">
+                    <h5>Create Driver</h5>
+                    <form id="driverForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom *</label>
+                                    <input type="text" class="form-control" id="driver-nom" value="Dupont" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Prenom *</label>
+                                    <input type="text" class="form-control" id="driver-prenom" value="Jean" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="driver-email" value="jean.dupont@example.com" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Telephone *</label>
+                                    <input type="text" class="form-control" id="driver-telephone" value="+33123456789" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Numero Permis *</label>
+                                    <input type="text" class="form-control" id="driver-numeroPermis" value="DL123456" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date Embauche *</label>
+                                    <input type="date" class="form-control" id="driver-dateEmbauche" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" id="driver-status">
+                                        <option value="AVAILABLE">AVAILABLE</option>
+                                        <option value="BUSY">BUSY</option>
+                                        <option value="OFF_DUTY">OFF_DUTY</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success" onclick="createDriver()">Create Driver</button>
+                    </form>
+                </div>
+
+                <div class="form-section">
+                    <h5>Update Driver</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Driver ID *</label>
+                                <input type="number" class="form-control" id="updateDriverId" placeholder="Enter driver ID">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <button type="button" class="btn btn-warning" onclick="updateDriver()">Update Driver</button>
+                            <button type="button" class="btn btn-danger" onclick="deleteDriver()">Delete Driver</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="driversList"></div>
+            </div>
+        </div>
+
+        <!-- TRUCKS TAB -->
+        <div class="tab-pane fade" id="trucks" role="tabpanel">
+            <div class="entity-section">
+                <h3>🚚 Trucks Management</h3>
+                <div class="btn-group-crud">
+                    <button class="btn btn-primary" onclick="loadAllTrucks()">Get All Trucks</button>
+                    <button class="btn btn-info" onclick="showGetTruckById()">Get by ID</button>
+                    <button class="btn btn-info" onclick="showGetTruckByImmatriculation()">Get by Immatriculation</button>
+                    <button class="btn btn-info" onclick="showGetTrucksByStatus()">Get by Status</button>
+                </div>
+                
+                <div class="form-section">
+                    <h5>Create Truck</h5>
+                    <form id="truckForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Immatriculation *</label>
+                                    <input type="text" class="form-control" id="truck-immatriculation" value="AB-123-CD" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Marque *</label>
+                                    <input type="text" class="form-control" id="truck-marque" value="Mercedes" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Modele *</label>
+                                    <input type="text" class="form-control" id="truck-modele" value="Actros" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Capacité Maximale (kg) *</label>
+                                    <input type="number" class="form-control" id="truck-capaciteMaximale" value="15000" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date Achat *</label>
+                                    <input type="date" class="form-control" id="truck-dateAchat" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date Dernier Entretien *</label>
+                                    <input type="date" class="form-control" id="truck-dateDernierEntretien" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" id="truck-status">
+                                        <option value="AVAILABLE">AVAILABLE</option>
+                                        <option value="IN_USE">IN_USE</option>
+                                        <option value="MAINTENANCE">MAINTENANCE</option>
+                                        <option value="OUT_OF_SERVICE">OUT_OF_SERVICE</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success" onclick="createTruck()">Create Truck</button>
+                    </form>
+                </div>
+
+                <div class="form-section">
+                    <h5>Update/Delete Truck</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Truck ID *</label>
+                                <input type="number" class="form-control" id="updateTruckId" placeholder="Enter truck ID">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <button type="button" class="btn btn-warning" onclick="updateTruck()">Update Truck</button>
+                            <button type="button" class="btn btn-danger" onclick="deleteTruck()">Delete Truck</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="trucksList"></div>
+            </div>
+        </div>
+
+        <!-- ROUTES TAB -->
+        <div class="tab-pane fade" id="routes" role="tabpanel">
+            <div class="entity-section">
+                <h3>🗺️ Collection Routes Management</h3>
+                <div class="btn-group-crud">
+                    <button class="btn btn-primary" onclick="loadAllRoutes()">Get All Routes</button>
+                    <button class="btn btn-info" onclick="showGetRouteById()">Get by ID</button>
+                    <button class="btn btn-info" onclick="showGetRoutesByDriver()">Get by Driver ID</button>
+                    <button class="btn btn-info" onclick="showGetRoutesByTruck()">Get by Truck ID</button>
+                    <button class="btn btn-info" onclick="showGetRoutesByOptimise()">Get by Optimise</button>
+                </div>
+                
+                <div class="form-section">
+                    <h5>Create Route</h5>
+                    <form id="routeForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom *</label>
+                                    <input type="text" class="form-control" id="route-nom" value="Route Centre-Ville" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Description *</label>
+                                    <textarea class="form-control" id="route-description" rows="3" required>Collecte dans le centre-ville</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date Début *</label>
+                                    <input type="datetime-local" class="form-control" id="route-dateDebut" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date Fin</label>
+                                    <input type="datetime-local" class="form-control" id="route-dateFin">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Distance Estimée (km) *</label>
+                                    <input type="number" step="0.1" class="form-control" id="route-distanceEstimee" value="45.5" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Durée Estimée (minutes) *</label>
+                                    <input type="number" class="form-control" id="route-dureeEstimee" value="240" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre Conteneurs</label>
+                                    <input type="number" class="form-control" id="route-nombreConteneurs" value="25">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Optimisé</label>
+                                    <select class="form-select" id="route-optimise">
+                                        <option value="false">False</option>
+                                        <option value="true">True</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Driver ID *</label>
+                                    <input type="number" class="form-control" id="route-driverId" placeholder="1" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Truck ID *</label>
+                                    <input type="number" class="form-control" id="route-truckId" placeholder="1" required>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success" onclick="createRoute()">Create Route</button>
+                    </form>
+                </div>
+
+                <div class="form-section">
+                    <h5>Update/Delete Route</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Route ID *</label>
+                                <input type="number" class="form-control" id="updateRouteId" placeholder="Enter route ID">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <button type="button" class="btn btn-warning" onclick="updateRoute()">Update Route</button>
+                            <button type="button" class="btn btn-danger" onclick="deleteRoute()">Delete Route</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="routesList"></div>
+            </div>
+        </div>
+
+        <!-- SCHEDULES TAB -->
+        <div class="tab-pane fade" id="schedules" role="tabpanel">
+            <div class="entity-section">
+                <h3>📅 Schedules Management</h3>
+                <div class="btn-group-crud">
+                    <button class="btn btn-primary" onclick="loadAllSchedules()">Get All Schedules</button>
+                    <button class="btn btn-info" onclick="showGetScheduleById()">Get by ID</button>
+                    <button class="btn btn-info" onclick="showGetSchedulesByStatus()">Get by Status</button>
+                    <button class="btn btn-info" onclick="showGetSchedulesByDriver()">Get by Driver ID</button>
+                    <button class="btn btn-info" onclick="showGetSchedulesByTruck()">Get by Truck ID</button>
+                </div>
+                
+                <div class="form-section">
+                    <h5>Create Schedule</h5>
+                    <form id="scheduleForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Date Heure Début *</label>
+                                    <input type="datetime-local" class="form-control" id="schedule-dateHeureDebut" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date Heure Fin *</label>
+                                    <input type="datetime-local" class="form-control" id="schedule-dateHeureFin" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Notes</label>
+                                    <textarea class="form-control" id="schedule-notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" id="schedule-status">
+                                        <option value="PLANNED">PLANNED</option>
+                                        <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                        <option value="COMPLETED">COMPLETED</option>
+                                        <option value="CANCELLED">CANCELLED</option>
+                                        <option value="DELAYED">DELAYED</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Driver ID *</label>
+                                    <input type="number" class="form-control" id="schedule-driverId" placeholder="1" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Truck ID *</label>
+                                    <input type="number" class="form-control" id="schedule-truckId" placeholder="1" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Route ID (Optional)</label>
+                                    <input type="number" class="form-control" id="schedule-routeId" placeholder="1">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success" onclick="createSchedule()">Create Schedule</button>
+                    </form>
+                </div>
+
+                <div class="form-section">
+                    <h5>Update/Delete Schedule</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Schedule ID *</label>
+                                <input type="number" class="form-control" id="updateScheduleId" placeholder="Enter schedule ID">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <button type="button" class="btn btn-warning" onclick="updateSchedule()">Update Schedule</button>
+                            <button type="button" class="btn btn-danger" onclick="deleteSchedule()">Delete Schedule</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="schedulesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="response-box">
+        <h5>API Response:</h5>
+        <pre id="response"></pre>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_BASE = {
+        drivers: '/api/drivers',
+        trucks: '/api/trucks',
+        routes: '/api/routes',
+        schedules: '/api/schedules'
+    };
+
+    // Set default dates
+    $(document).ready(function() {
+        const today = new Date().toISOString().split('T')[0];
+        const now = new Date().toISOString().slice(0, 16);
+        $('#driver-dateEmbauche').val(today);
+        $('#truck-dateAchat').val(today);
+        $('#truck-dateDernierEntretien').val(today);
+        $('#route-dateDebut').val(now);
+        $('#schedule-dateHeureDebut').val(now);
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        $('#schedule-dateHeureFin').val(tomorrow.toISOString().slice(0, 16));
+    });
+
+    function displayResponse(data) {
+        $('#response').text(JSON.stringify(data, null, 2));
+    }
+
+    // ========== DRIVERS ==========
+    function createDriver() {
+        const formData = {
+            nom: $('#driver-nom').val(),
+            prenom: $('#driver-prenom').val(),
+            email: $('#driver-email').val(),
+            telephone: $('#driver-telephone').val(),
+            numeroPermis: $('#driver-numeroPermis').val(),
+            dateEmbauche: $('#driver-dateEmbauche').val(),
+            status: $('#driver-status').val()
+        };
+        $.ajax({
+            url: API_BASE.drivers,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                displayResponse(data);
+                alert('Driver created successfully!');
+                $('#driverForm')[0].reset();
+                $('#driver-dateEmbauche').val(new Date().toISOString().split('T')[0]);
+            },
+            error: function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            }
+        });
+    }
+
+    function loadAllDrivers() {
+        $.get(API_BASE.drivers)
+            .done(function(data) {
+                displayResponse(data);
+                displayDriversList(data);
+            })
+            .fail(function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            });
+    }
+
+    function showGetDriverById() {
+        const id = prompt('Enter Driver ID:');
+        if (id) {
+            $.get(API_BASE.drivers + '/' + id)
+                .done(function(data) {
+                    displayResponse(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetDriverByEmail() {
+        const email = prompt('Enter Driver Email:');
+        if (email) {
+            $.get(API_BASE.drivers + '/email/' + encodeURIComponent(email))
+                .done(function(data) {
+                    displayResponse(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetDriversByStatus() {
+        const status = prompt('Enter Status (AVAILABLE, BUSY, OFF_DUTY):');
+        if (status) {
+            $.get(API_BASE.drivers + '/status/' + status)
+                .done(function(data) {
+                    displayResponse(data);
+                    displayDriversList(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function updateDriver() {
+        const id = $('#updateDriverId').val();
+        if (!id) {
+            alert('Please enter Driver ID');
+            return;
+        }
+        const formData = {
+            nom: $('#driver-nom').val(),
+            prenom: $('#driver-prenom').val(),
+            email: $('#driver-email').val(),
+            telephone: $('#driver-telephone').val(),
+            numeroPermis: $('#driver-numeroPermis').val(),
+            dateEmbauche: $('#driver-dateEmbauche').val(),
+            status: $('#driver-status').val()
+        };
+        $.ajax({
+            url: API_BASE.drivers + '/' + id,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                displayResponse(data);
+                alert('Driver updated successfully!');
+            },
+            error: function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            }
+        });
+    }
+
+    function deleteDriver() {
+        const id = $('#updateDriverId').val();
+        if (!id) {
+            alert('Please enter Driver ID');
+            return;
+        }
+        if (confirm('Are you sure you want to delete driver ' + id + '?')) {
+            $.ajax({
+                url: API_BASE.drivers + '/' + id,
+                type: 'DELETE',
+                success: function() {
+                    displayResponse({ message: 'Driver deleted successfully' });
+                    alert('Driver deleted!');
+                },
+                error: function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                }
+            });
+        }
+    }
+
+    function displayDriversList(drivers) {
+        if (!drivers || drivers.length === 0) {
+            $('#driversList').html('<div class="alert alert-info">No drivers found</div>');
+            return;
+        }
+        const listHtml = drivers.map(driver =>
+            `<div class="card">
+                <div class="card-body">
+                    <h6>${driver.prenom} ${driver.nom} <span class="badge bg-primary badge-status">${driver.status}</span></h6>
+                    <p class="mb-1"><strong>Email:</strong> ${driver.email}</p>
+                    <p class="mb-1"><strong>Phone:</strong> ${driver.telephone}</p>
+                    <p class="mb-1"><strong>License:</strong> ${driver.numeroPermis}</p>
+                    <p class="mb-0"><strong>ID:</strong> ${driver.id}</p>
+                </div>
+            </div>`
+        ).join('');
+        $('#driversList').html(listHtml);
+    }
+
+    // ========== TRUCKS ==========
+    function createTruck() {
+        const formData = {
+            immatriculation: $('#truck-immatriculation').val(),
+            marque: $('#truck-marque').val(),
+            modele: $('#truck-modele').val(),
+            capaciteMaximale: parseInt($('#truck-capaciteMaximale').val()),
+            dateAchat: $('#truck-dateAchat').val(),
+            dateDernierEntretien: $('#truck-dateDernierEntretien').val(),
+            status: $('#truck-status').val()
+        };
+        $.ajax({
+            url: API_BASE.trucks,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                displayResponse(data);
+                alert('Truck created successfully!');
+                $('#truckForm')[0].reset();
+                $('#truck-dateAchat').val(new Date().toISOString().split('T')[0]);
+                $('#truck-dateDernierEntretien').val(new Date().toISOString().split('T')[0]);
+            },
+            error: function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            }
+        });
+    }
+
+    function loadAllTrucks() {
+        $.get(API_BASE.trucks)
+            .done(function(data) {
+                displayResponse(data);
+                displayTrucksList(data);
+            })
+            .fail(function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            });
+    }
+
+    function showGetTruckById() {
+        const id = prompt('Enter Truck ID:');
+        if (id) {
+            $.get(API_BASE.trucks + '/' + id)
+                .done(function(data) {
+                    displayResponse(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetTruckByImmatriculation() {
+        const immat = prompt('Enter Immatriculation:');
+        if (immat) {
+            $.get(API_BASE.trucks + '/immatriculation/' + encodeURIComponent(immat))
+                .done(function(data) {
+                    displayResponse(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetTrucksByStatus() {
+        const status = prompt('Enter Status (AVAILABLE, IN_USE, MAINTENANCE, OUT_OF_SERVICE):');
+        if (status) {
+            $.get(API_BASE.trucks + '/status/' + status)
+                .done(function(data) {
+                    displayResponse(data);
+                    displayTrucksList(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function updateTruck() {
+        const id = $('#updateTruckId').val();
+        if (!id) {
+            alert('Please enter Truck ID');
+            return;
+        }
+        const formData = {
+            immatriculation: $('#truck-immatriculation').val(),
+            marque: $('#truck-marque').val(),
+            modele: $('#truck-modele').val(),
+            capaciteMaximale: parseInt($('#truck-capaciteMaximale').val()),
+            dateAchat: $('#truck-dateAchat').val(),
+            dateDernierEntretien: $('#truck-dateDernierEntretien').val(),
+            status: $('#truck-status').val()
+        };
+        $.ajax({
+            url: API_BASE.trucks + '/' + id,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                displayResponse(data);
+                alert('Truck updated successfully!');
+            },
+            error: function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            }
+        });
+    }
+
+    function deleteTruck() {
+        const id = $('#updateTruckId').val();
+        if (!id) {
+            alert('Please enter Truck ID');
+            return;
+        }
+        if (confirm('Are you sure you want to delete truck ' + id + '?')) {
+            $.ajax({
+                url: API_BASE.trucks + '/' + id,
+                type: 'DELETE',
+                success: function() {
+                    displayResponse({ message: 'Truck deleted successfully' });
+                    alert('Truck deleted!');
+                },
+                error: function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                }
+            });
+        }
+    }
+
+    function displayTrucksList(trucks) {
+        if (!trucks || trucks.length === 0) {
+            $('#trucksList').html('<div class="alert alert-info">No trucks found</div>');
+            return;
+        }
+        const listHtml = trucks.map(truck =>
+            `<div class="card">
+                <div class="card-body">
+                    <h6>${truck.marque} ${truck.modele} <span class="badge bg-primary badge-status">${truck.status}</span></h6>
+                    <p class="mb-1"><strong>Immatriculation:</strong> ${truck.immatriculation}</p>
+                    <p class="mb-1"><strong>Capacité:</strong> ${truck.capaciteMaximale} kg</p>
+                    <p class="mb-0"><strong>ID:</strong> ${truck.id}</p>
+                </div>
+            </div>`
+        ).join('');
+        $('#trucksList').html(listHtml);
+    }
+
+    // ========== ROUTES ==========
+    function createRoute() {
+        const formData = {
+            nom: $('#route-nom').val(),
+            description: $('#route-description').val(),
+            dateDebut: $('#route-dateDebut').val() + ':00',
+            dateFin: $('#route-dateFin').val() ? $('#route-dateFin').val() + ':00' : null,
+            distanceEstimee: parseFloat($('#route-distanceEstimee').val()),
+            dureeEstimee: parseInt($('#route-dureeEstimee').val()),
+            nombreConteneurs: $('#route-nombreConteneurs').val() ? parseInt($('#route-nombreConteneurs').val()) : null,
+            optimise: $('#route-optimise').val() === 'true',
+            driverId: parseInt($('#route-driverId').val()),
+            truckId: parseInt($('#route-truckId').val())
+        };
+        $.ajax({
+            url: API_BASE.routes,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                displayResponse(data);
+                alert('Route created successfully!');
+                $('#routeForm')[0].reset();
+            },
+            error: function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            }
+        });
+    }
+
+    function loadAllRoutes() {
+        $.get(API_BASE.routes)
+            .done(function(data) {
+                displayResponse(data);
+                displayRoutesList(data);
+            })
+            .fail(function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            });
+    }
+
+    function showGetRouteById() {
+        const id = prompt('Enter Route ID:');
+        if (id) {
+            $.get(API_BASE.routes + '/' + id)
+                .done(function(data) {
+                    displayResponse(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetRoutesByDriver() {
+        const driverId = prompt('Enter Driver ID:');
+        if (driverId) {
+            $.get(API_BASE.routes + '/driver/' + driverId)
+                .done(function(data) {
+                    displayResponse(data);
+                    displayRoutesList(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetRoutesByTruck() {
+        const truckId = prompt('Enter Truck ID:');
+        if (truckId) {
+            $.get(API_BASE.routes + '/truck/' + truckId)
+                .done(function(data) {
+                    displayResponse(data);
+                    displayRoutesList(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetRoutesByOptimise() {
+        const optimise = prompt('Enter Optimise (true/false):');
+        if (optimise !== null) {
+            $.get(API_BASE.routes + '/optimise/' + optimise)
+                .done(function(data) {
+                    displayResponse(data);
+                    displayRoutesList(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function updateRoute() {
+        const id = $('#updateRouteId').val();
+        if (!id) {
+            alert('Please enter Route ID');
+            return;
+        }
+        const formData = {
+            nom: $('#route-nom').val(),
+            description: $('#route-description').val(),
+            dateDebut: $('#route-dateDebut').val() + ':00',
+            dateFin: $('#route-dateFin').val() ? $('#route-dateFin').val() + ':00' : null,
+            distanceEstimee: parseFloat($('#route-distanceEstimee').val()),
+            dureeEstimee: parseInt($('#route-dureeEstimee').val()),
+            nombreConteneurs: $('#route-nombreConteneurs').val() ? parseInt($('#route-nombreConteneurs').val()) : null,
+            optimise: $('#route-optimise').val() === 'true',
+            driverId: parseInt($('#route-driverId').val()),
+            truckId: parseInt($('#route-truckId').val())
+        };
+        $.ajax({
+            url: API_BASE.routes + '/' + id,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                displayResponse(data);
+                alert('Route updated successfully!');
+            },
+            error: function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            }
+        });
+    }
+
+    function deleteRoute() {
+        const id = $('#updateRouteId').val();
+        if (!id) {
+            alert('Please enter Route ID');
+            return;
+        }
+        if (confirm('Are you sure you want to delete route ' + id + '?')) {
+            $.ajax({
+                url: API_BASE.routes + '/' + id,
+                type: 'DELETE',
+                success: function() {
+                    displayResponse({ message: 'Route deleted successfully' });
+                    alert('Route deleted!');
+                },
+                error: function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                }
+            });
+        }
+    }
+
+    function displayRoutesList(routes) {
+        if (!routes || routes.length === 0) {
+            $('#routesList').html('<div class="alert alert-info">No routes found</div>');
+            return;
+        }
+        const listHtml = routes.map(route =>
+            `<div class="card">
+                <div class="card-body">
+                    <h6>${route.nom} ${route.optimise ? '<span class="badge bg-success">Optimisé</span>' : ''}</h6>
+                    <p class="mb-1"><strong>Description:</strong> ${route.description}</p>
+                    <p class="mb-1"><strong>Distance:</strong> ${route.distanceEstimee} km</p>
+                    <p class="mb-1"><strong>Durée:</strong> ${route.dureeEstimee} min</p>
+                    <p class="mb-0"><strong>ID:</strong> ${route.id} | Driver: ${route.driverId} | Truck: ${route.truckId}</p>
+                </div>
+            </div>`
+        ).join('');
+        $('#routesList').html(listHtml);
+    }
+
+    // ========== SCHEDULES ==========
+    function createSchedule() {
+        const formData = {
+            dateHeureDebut: $('#schedule-dateHeureDebut').val() + ':00',
+            dateHeureFin: $('#schedule-dateHeureFin').val() + ':00',
+            notes: $('#schedule-notes').val() || null,
+            status: $('#schedule-status').val(),
+            driverId: parseInt($('#schedule-driverId').val()),
+            truckId: parseInt($('#schedule-truckId').val()),
+            routeId: $('#schedule-routeId').val() ? parseInt($('#schedule-routeId').val()) : null
+        };
+        $.ajax({
+            url: API_BASE.schedules,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                displayResponse(data);
+                alert('Schedule created successfully!');
+                $('#scheduleForm')[0].reset();
+            },
+            error: function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            }
+        });
+    }
+
+    function loadAllSchedules() {
+        $.get(API_BASE.schedules)
+            .done(function(data) {
+                displayResponse(data);
+                displaySchedulesList(data);
+            })
+            .fail(function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            });
+    }
+
+    function showGetScheduleById() {
+        const id = prompt('Enter Schedule ID:');
+        if (id) {
+            $.get(API_BASE.schedules + '/' + id)
+                .done(function(data) {
+                    displayResponse(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetSchedulesByStatus() {
+        const status = prompt('Enter Status (PLANNED, IN_PROGRESS, COMPLETED, CANCELLED, DELAYED):');
+        if (status) {
+            $.get(API_BASE.schedules + '/status/' + status)
+                .done(function(data) {
+                    displayResponse(data);
+                    displaySchedulesList(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetSchedulesByDriver() {
+        const driverId = prompt('Enter Driver ID:');
+        if (driverId) {
+            $.get(API_BASE.schedules + '/driver/' + driverId)
+                .done(function(data) {
+                    displayResponse(data);
+                    displaySchedulesList(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function showGetSchedulesByTruck() {
+        const truckId = prompt('Enter Truck ID:');
+        if (truckId) {
+            $.get(API_BASE.schedules + '/truck/' + truckId)
+                .done(function(data) {
+                    displayResponse(data);
+                    displaySchedulesList(data);
+                })
+                .fail(function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                });
+        }
+    }
+
+    function updateSchedule() {
+        const id = $('#updateScheduleId').val();
+        if (!id) {
+            alert('Please enter Schedule ID');
+            return;
+        }
+        const formData = {
+            dateHeureDebut: $('#schedule-dateHeureDebut').val() + ':00',
+            dateHeureFin: $('#schedule-dateHeureFin').val() + ':00',
+            notes: $('#schedule-notes').val() || null,
+            status: $('#schedule-status').val(),
+            driverId: parseInt($('#schedule-driverId').val()),
+            truckId: parseInt($('#schedule-truckId').val()),
+            routeId: $('#schedule-routeId').val() ? parseInt($('#schedule-routeId').val()) : null
+        };
+        $.ajax({
+            url: API_BASE.schedules + '/' + id,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                displayResponse(data);
+                alert('Schedule updated successfully!');
+            },
+            error: function(xhr) {
+                displayResponse(xhr.responseJSON || { error: xhr.statusText });
+            }
+        });
+    }
+
+    function deleteSchedule() {
+        const id = $('#updateScheduleId').val();
+        if (!id) {
+            alert('Please enter Schedule ID');
+            return;
+        }
+        if (confirm('Are you sure you want to delete schedule ' + id + '?')) {
+            $.ajax({
+                url: API_BASE.schedules + '/' + id,
+                type: 'DELETE',
+                success: function() {
+                    displayResponse({ message: 'Schedule deleted successfully' });
+                    alert('Schedule deleted!');
+                },
+                error: function(xhr) {
+                    displayResponse(xhr.responseJSON || { error: xhr.statusText });
+                }
+            });
+        }
+    }
+
+    function displaySchedulesList(schedules) {
+        if (!schedules || schedules.length === 0) {
+            $('#schedulesList').html('<div class="alert alert-info">No schedules found</div>');
+            return;
+        }
+        const listHtml = schedules.map(schedule =>
+            `<div class="card">
+                <div class="card-body">
+                    <h6>Schedule #${schedule.id} <span class="badge bg-primary badge-status">${schedule.status}</span></h6>
+                    <p class="mb-1"><strong>Début:</strong> ${schedule.dateHeureDebut}</p>
+                    <p class="mb-1"><strong>Fin:</strong> ${schedule.dateHeureFin}</p>
+                    <p class="mb-1"><strong>Notes:</strong> ${schedule.notes || 'N/A'}</p>
+                    <p class="mb-0"><strong>Driver:</strong> ${schedule.driverId} | <strong>Truck:</strong> ${schedule.truckId} | <strong>Route:</strong> ${schedule.routeId || 'N/A'}</p>
+                </div>
+            </div>`
+        ).join('');
+        $('#schedulesList').html(listHtml);
+    }
+</script>
+</body>
+</html>

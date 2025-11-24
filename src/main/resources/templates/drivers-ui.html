@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Driver Management</title>
+    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <style>
+        .response-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🚗</text></svg>">
+</head>
+<body>
+<div class="container mt-4">
+    <h1 class="mb-4">🚗 Driver Management System</h1>
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#create">Create Driver</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#list">All Drivers</a>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+        <!-- Create Tab -->
+        <div class="tab-pane fade show active" id="create">
+            <form id="driverForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Nom</label>
+                            <input type="text" class="form-control" name="nom" value="Dupont" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Prenom</label>
+                            <input type="text" class="form-control" name="prenom" value="Jean" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" value="jean.dupont@example.com" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Telephone</label>
+                            <input type="text" class="form-control" name="telephone" value="+33123456789" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Numero Permis</label>
+                            <input type="text" class="form-control" name="numeroPermis" value="PERM123456" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date Embauche</label>
+                            <input type="date" class="form-control" name="dateEmbauche" th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-control" name="status">
+                                <option value="AVAILABLE">AVAILABLE</option>
+                                <option value="OFF_DUTY">OFF_DUTY</option>
+                                <option value="ON_BREAK">ON_BREAK</option>
+                                <option value="ON_ROUTE">ON_ROUTE</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="createDriver()">Create Driver</button>
+            </form>
+        </div>
+
+        <!-- List Tab -->
+        <div class="tab-pane fade" id="list">
+            <button class="btn btn-info mb-3" onclick="loadAllDrivers()">Load All Drivers</button>
+            <div id="driversList"></div>
+        </div>
+    </div>
+
+    <div class="response-box">
+        <h5>API Response:</h5>
+        <pre id="response"></pre>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '/api/drivers';
+
+    function displayResponse(data) {
+        $('#response').text(JSON.stringify(data, null, 2));
+    }
+
+    function createDriver() {
+        const formData = {
+            nom: $('input[name="nom"]').val(),
+            prenom: $('input[name="prenom"]').val(),
+            email: $('input[name="email"]').val(),
+            telephone: $('input[name="telephone"]').val(),
+            numeroPermis: $('input[name="numeroPermis"]').val(),
+            dateEmbauche: $('input[name="dateEmbauche"]').val(),
+            status: $('select[name="status"]').val()
+        };
+
+        $.ajax({
+            url: API_BASE,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                displayResponse(data);
+                alert('Driver created successfully!');
+            },
+            error: function(xhr) {
+                displayResponse(xhr.responseJSON || { error: 'Request failed' });
+            }
+        });
+    }
+
+    function loadAllDrivers() {
+        $.get(API_BASE)
+            .done(function(data) {
+                displayResponse(data);
+                displayDriversList(data);
+            })
+            .fail(function(xhr) {
+                displayResponse(xhr.responseJSON || { error: 'Request failed' });
+            });
+    }
+
+    function displayDriversList(drivers) {
+        const listHtml = drivers.map(driver =>
+            `<div class="card mb-2">
+                    <div class="card-body">
+                        <h6>${driver.prenom} ${driver.nom}</h6>
+                        <p class="mb-1">Email: ${driver.email}</p>
+                        <p class="mb-1">Status: ${driver.status}</p>
+                    </div>
+                </div>`
+        ).join('');
+        $('#driversList').html(listHtml);
+    }
+</script>
+</body>
+</html>

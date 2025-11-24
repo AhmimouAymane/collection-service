@@ -1,7 +1,11 @@
 package com.iotwastecollection.collection.service.impl;
 
 import com.iotwastecollection.collection.domain.entity.CollectionRoute;
+import com.iotwastecollection.collection.domain.entity.Driver;
+import com.iotwastecollection.collection.domain.entity.Truck;
 import com.iotwastecollection.collection.repository.CollectionRouteRepository;
+import com.iotwastecollection.collection.repository.DriverRepository;
+import com.iotwastecollection.collection.repository.TruckRepository;
 import com.iotwastecollection.collection.service.inter.ICollectionRouteService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +18,34 @@ import java.util.List;
 @Transactional
 public class CollectionRouteServiceImpl implements ICollectionRouteService {
     private final CollectionRouteRepository collectionRouteRepository;
+    private final DriverRepository driverRepository;
+    private final TruckRepository truckRepository;
 
     @Autowired
-    public CollectionRouteServiceImpl(CollectionRouteRepository collectionRouteRepository) {
+    public CollectionRouteServiceImpl(CollectionRouteRepository collectionRouteRepository,
+                                      DriverRepository driverRepository,
+                                      TruckRepository truckRepository) {
         this.collectionRouteRepository = collectionRouteRepository;
+        this.driverRepository = driverRepository;
+        this.truckRepository = truckRepository;
     }
 
     @Override
     public CollectionRoute createCollectionRoute(CollectionRoute route) {
+        // Load Driver entity if it exists
+        if (route.getDriver() != null && route.getDriver().getId() != null) {
+            Driver driver = driverRepository.findById(route.getDriver().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Driver not found with id: " + route.getDriver().getId()));
+            route.setDriver(driver);
+        }
+        
+        // Load Truck entity if it exists
+        if (route.getTruck() != null && route.getTruck().getId() != null) {
+            Truck truck = truckRepository.findById(route.getTruck().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Truck not found with id: " + route.getTruck().getId()));
+            route.setTruck(truck);
+        }
+        
         return collectionRouteRepository.save(route);
     }
 
@@ -51,8 +75,20 @@ public class CollectionRouteServiceImpl implements ICollectionRouteService {
         existing.setDureeEstimee(route.getDureeEstimee());
         existing.setNombreConteneurs(route.getNombreConteneurs());
         existing.setOptimise(route.getOptimise());
-        existing.setDriver(route.getDriver());
-        existing.setTruck(route.getTruck());
+        
+        // Load Driver entity if it exists
+        if (route.getDriver() != null && route.getDriver().getId() != null) {
+            Driver driver = driverRepository.findById(route.getDriver().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Driver not found with id: " + route.getDriver().getId()));
+            existing.setDriver(driver);
+        }
+        
+        // Load Truck entity if it exists
+        if (route.getTruck() != null && route.getTruck().getId() != null) {
+            Truck truck = truckRepository.findById(route.getTruck().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Truck not found with id: " + route.getTruck().getId()));
+            existing.setTruck(truck);
+        }
 
         return collectionRouteRepository.save(existing);
     }

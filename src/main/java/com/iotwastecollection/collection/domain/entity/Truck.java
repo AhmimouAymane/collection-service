@@ -21,7 +21,7 @@ public class Truck {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(name = "immatriculation", nullable = false, unique = true, length = 50)
     private String immatriculation;
 
     @Column(nullable = false, length = 100)

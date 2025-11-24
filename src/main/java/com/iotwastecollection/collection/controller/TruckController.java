@@ -1,8 +1,12 @@
 package com.iotwastecollection.collection.controller;
 
+import com.iotwastecollection.collection.domain.dto.request.TruckRequest;
+import com.iotwastecollection.collection.domain.dto.response.TruckResponse;
 import com.iotwastecollection.collection.domain.entity.Truck;
 import com.iotwastecollection.collection.domain.enums.TruckStatus;
+import com.iotwastecollection.collection.mapper.TruckMapper;
 import com.iotwastecollection.collection.service.inter.ITruckService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,29 +21,38 @@ public class TruckController {
     @Autowired
     private ITruckService truckService;
 
+    @Autowired
+    private TruckMapper truckMapper;
+
     @PostMapping
-    public ResponseEntity<Truck> createTruck(@RequestBody Truck truck) {
+    public ResponseEntity<TruckResponse> createTruck(@Valid @RequestBody TruckRequest request) {
+        Truck truck = truckMapper.toEntity(request);
         Truck createdTruck = truckService.createTruck(truck);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdTruck);
+        TruckResponse response = truckMapper.toResponse(createdTruck);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Truck> getTruckById(@PathVariable Long id) {
+    public ResponseEntity<TruckResponse> getTruckById(@PathVariable Long id) {
         Truck truck = truckService.getTruckById(id);
-        return ResponseEntity.ok(truck);
+        TruckResponse response = truckMapper.toResponse(truck);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<Truck>> getAllTrucks() {
+    public ResponseEntity<List<TruckResponse>> getAllTrucks() {
         List<Truck> trucks = truckService.getAllTrucks();
-        return ResponseEntity.ok(trucks);
+        List<TruckResponse> responses = truckMapper.toResponseList(trucks);
+        return ResponseEntity.ok(responses);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Truck> updateTruck(@PathVariable Long id, @RequestBody Truck truck) {
+    public ResponseEntity<TruckResponse> updateTruck(@PathVariable Long id, @Valid @RequestBody TruckRequest request) {
+        Truck truck = truckMapper.toEntity(request);
         truck.setId(id);
         Truck updatedTruck = truckService.updateTruck(truck);
-        return ResponseEntity.ok(updatedTruck);
+        TruckResponse response = truckMapper.toResponse(updatedTruck);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -49,14 +62,16 @@ public class TruckController {
     }
 
     @GetMapping("/immatriculation/{immatriculation}")
-    public ResponseEntity<Truck> getTruckByImmatriculation(@PathVariable String immatriculation) {
+    public ResponseEntity<TruckResponse> getTruckByImmatriculation(@PathVariable String immatriculation) {
         Truck truck = truckService.findByImmatriculation(immatriculation);
-        return ResponseEntity.ok(truck);
+        TruckResponse response = truckMapper.toResponse(truck);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<Truck>> getTrucksByStatus(@PathVariable TruckStatus status) {
+    public ResponseEntity<List<TruckResponse>> getTrucksByStatus(@PathVariable TruckStatus status) {
         List<Truck> trucks = truckService.findByStatus(status);
-        return ResponseEntity.ok(trucks);
+        List<TruckResponse> responses = truckMapper.toResponseList(trucks);
+        return ResponseEntity.ok(responses);
     }
 }
